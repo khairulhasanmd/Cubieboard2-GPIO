@@ -76,7 +76,7 @@ int main(void)
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
             res = curl_easy_perform(curl);
             printf("%s\n", s.ptr);
-            if (s.ptr == '1'){
+            if (s.ptr == 1){
                 if(sunxi_gpio_output(PD01,HIGH)){
                     printf("Failed to set GPIO pin value\n");
                     return -1;
@@ -87,9 +87,10 @@ int main(void)
                 return -1;
                 }
                 // usleep(500000);
-                //s.len = 0;
-                free(s.ptr);
-                init_string(&s);
+                //s.ptr = NULL;
+		//s.len = 0;
+                //free(s.ptr);
+                //init_string(&s);
             }//if match
             
         }//while     
