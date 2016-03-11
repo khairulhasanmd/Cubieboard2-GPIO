@@ -88,10 +88,11 @@ int main(void)
                     }
                 usleep(500000);
             }//if match
-            free(s.ptr);
+            
         }//while     
 
         /* always cleanup */
+        free(s.ptr);
         curl_easy_cleanup(curl);
         sunxi_gpio_cleanup();
     }
