@@ -1,7 +1,7 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-
+#include <curl/curl.h>
 #include "gpio_lib.h"
 
 #define PD01    SUNXI_GPD(0)
@@ -14,9 +14,40 @@
 #define SCK     SUNXI_GPE(1)
 #define CS      SUNXI_GPE(0)
 
-int main()
+struct string {
+  char *ptr;
+  size_t len;
+};
+
+void init_string(struct string *s) {
+  s->len = 0;
+  s->ptr = malloc(s->len+1);
+  if (s->ptr == NULL) {
+    fprintf(stderr, "malloc() failed\n");
+    exit(EXIT_FAILURE);
+  }
+  s->ptr[0] = '\0';
+}
+
+size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
 {
-    // int runtime=1;
+  size_t new_len = s->len + size*nmemb;
+  s->ptr = realloc(s->ptr, new_len+1);
+  if (s->ptr == NULL) {
+    fprintf(stderr, "realloc() failed\n");
+    exit(EXIT_FAILURE);
+  }
+  memcpy(s->ptr+s->len, ptr, size*nmemb);
+  s->ptr[new_len] = '\0';
+  s->len = new_len;
+
+  return size*nmemb;
+}
+
+int main(void)
+{
+    CURL *curl;
+    CURLcode res;
     char input[100];
     char bcode[] = "8941100314517";
 
@@ -28,37 +59,41 @@ int main()
         printf("Failed to config GPIO pin\n");
         return -1;
     }
+    curl = curl_easy_init();
+    if(curl) {
+        char URL[100];
+        struct string s;
+        init_string(&s);
 
-    while (1){//unlimited loop
-        scanf ("%[^\n]%*c", input);
-        // int i;
-        //printf("%d\n",strcmp(input, bcode));
-        int tt;
-        int match = 1;
-        for (tt=0;tt<10;tt++){
-            if(input[tt] != bcode[tt]){
-                match = 0;
-            }
-        }
-        if (match == 1){
-            // for(i=0;i<runtime;i++){
-                if(sunxi_gpio_output(PD01,HIGH)){
-                    printf("Failed to set GPIO pin value\n");
+        while (1){//unlimited loop
+            scanf ("%[^\n]%*c", input);
+            // int i;
+            //printf("%d\n",strcmp(input, bcode));
+            sprintf(URL,"http://192.168.0.106/index.php?barcode=%s",input);
+  
+            curl_easy_setopt(curl, CURLOPT_URL, URL);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+            res = curl_easy_perform(curl);
+            printf("%s\n", s.ptr);
+            if (s.ptr == '1'){
+                    if(sunxi_gpio_output(PD01,HIGH)){
+                        printf("Failed to set GPIO pin value\n");
+                        return -1;
+                    }
+                    usleep(500000);
+                    if(sunxi_gpio_output(PD01,LOW)){
+                        printf("Failed to set GPIO pin value\n");
                     return -1;
-                }
+                    }
                 usleep(500000);
-                if(sunxi_gpio_output(PD01,LOW)){
-                    printf("Failed to set GPIO pin value\n");
-                return -1;
-                }
-            usleep(500000);
-            // }
-        }//if match
-    }//while
-    sunxi_gpio_cleanup();
+            }//if match
+            free(s.ptr);
+        }//while     
+
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+        sunxi_gpio_cleanup();
+    }
     return 0;
 }
-
-
-
-
