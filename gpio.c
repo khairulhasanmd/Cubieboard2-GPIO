@@ -87,7 +87,9 @@ int main(void)
                 return -1;
                 }
                 // usleep(500000);
-                s.len = 0;
+                //s.len = 0;
+                free(s.ptr);
+                init_string(&s);
             }//if match
             
         }//while     
