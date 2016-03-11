@@ -31,7 +31,7 @@ int main()
 
     while (1){//unlimited loop
         scanf ("%[^\n]%*c", input);
-        int i;
+        // int i;
         //printf("%d\n",strcmp(input, bcode));
         int tt;
         int match = 1;
