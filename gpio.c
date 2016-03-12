@@ -68,10 +68,7 @@ int main(void)
 
         while (1){//unlimited loop
             scanf ("%[^\n]%*c", input);
-            // int i;
-            //printf("%d\n",strcmp(input, bcode));
             sprintf(URL,"http://192.168.0.106/index.php?barcode=%s",input);
-  
             curl_easy_setopt(curl, CURLOPT_URL, URL);
             curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
@@ -89,14 +86,8 @@ int main(void)
                 return -1;
                 }
                 // usleep(500000);
-                //s.ptr = NULL;
-		//s.len = 0;
-                //free(s.ptr);
-                //init_string(&s);
             }//if match
-            
         }//while     
-
         /* always cleanup */
         free(s.ptr);
         curl_easy_cleanup(curl);
