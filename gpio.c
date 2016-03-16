@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <sys/time.h>
 #include "gpio_lib.h"
 
 #define PD01    SUNXI_GPD(0)
@@ -43,6 +44,16 @@ size_t writefunc(void *ptr, size_t size, size_t nmemb, struct string *s)
   s->len = new_len;
 
   return size*nmemb;
+}
+
+unsigned GetTickCount()
+{
+        struct timeval tv;
+        if(gettimeofday(&tv, NULL) != 0)
+        {
+        	return 0;
+        }
+        return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }
 
 int main(void)
